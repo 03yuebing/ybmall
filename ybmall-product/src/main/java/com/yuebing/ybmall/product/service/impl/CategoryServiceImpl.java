@@ -15,13 +15,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 商品分类业务实现。
+ *
+ * <p>负责分类树构建、分类增删改查以及删除前的业务规则校验。</p>
+ */
 @Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEntity> implements CategoryService {
 
-
     /**
-     * 获取所有分类
-     * @return
+     * 查询商品三级分类树。
+     *
+     * <p>先按照 parentCid 对全部分类分组，再递归挂载 children，避免递归过程中
+     * 反复扫描全量分类数据。</p>
+     *
+     * @return 三级分类树
      */
     @Override
     public List<CategoryEntity> listWithTree() {
@@ -36,6 +44,13 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
                 .toList();
     }
 
+    /**
+     * 递归查询指定分类的子分类。
+     *
+     * @param root 当前父分类
+     * @param parentIdMap 按父分类 ID 分组后的分类数据
+     * @return 子分类列表
+     */
     private List<CategoryEntity> getChildren(CategoryEntity root, Map<Long, List<CategoryEntity>> parentIdMap) {
         return parentIdMap.getOrDefault(root.getCatId(), List.of()).stream()
                 .peek(category -> category.setChildren(getChildren(category, parentIdMap)))
@@ -44,8 +59,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
     }
 
     /**
-     * 新增分类
-     * @param categorySaveVo
+     * 新增商品分类。
+     *
+     * @param categorySaveVo 新增分类请求参数
      */
     @Override
     public void saveCategory(CategorySaveVo categorySaveVo) {
@@ -63,9 +79,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
     }
 
     /**
-     * 通过id查询分类
-     * @param catId
-     * @return
+     * 根据分类 ID 查询详情。
+     *
+     * @param catId 分类 ID
+     * @return 分类详情
      */
     @Override
     public CategoryEntity getCategoryById(Long catId) {
@@ -79,8 +96,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
     }
 
     /**
-     * 更新分类
-     * @param categoryUpdateVo
+     * 更新商品分类。
+     *
+     * @param categoryUpdateVo 更新分类请求参数
      */
     @Override
     public void updateCategory(CategoryUpdateVo categoryUpdateVo) {
@@ -103,8 +121,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
     }
 
     /**
-     * 批量逻辑删除分类
-     * @param catIds
+     * 批量逻辑删除商品分类。
+     *
+     * <p>删除分类前先检查是否存在子分类，避免删除父分类后留下无法挂载的子节点。</p>
+     *
+     * @param catIds 待删除的分类 ID 列表
      */
     @Override
     public void removeCategoryByIds(List<Long> catIds) {

@@ -1,12 +1,12 @@
 package com.yuebing.ybmall.product.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.yuebing.ybmall.product.entity.CategoryEntity;
+import com.yuebing.ybmall.product.entity.BrandEntity;
 
 /**
- * 商品分类数据访问接口。
+ * 品牌数据访问接口。
  *
  * <p>继承 MyBatis-Plus 的 {@link BaseMapper} 后，可以直接使用基础 CRUD 能力。</p>
  */
-public interface CategoryMapper extends BaseMapper<CategoryEntity> {
+public interface BrandMapper extends BaseMapper<BrandEntity> {
 }
