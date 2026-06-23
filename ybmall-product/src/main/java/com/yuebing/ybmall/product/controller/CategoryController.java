@@ -1,5 +1,6 @@
 package com.yuebing.ybmall.product.controller;
 
+import com.yuebing.ybmall.common.utils.R;
 import com.yuebing.ybmall.product.entity.CategoryEntity;
 import com.yuebing.ybmall.product.service.CategoryService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,9 @@ public class CategoryController {
     }
 
     @GetMapping("/product/category/list/tree")
-    public List<CategoryEntity> listWithTree() {
-        return categoryService.listWithTree();
+    public R listWithTree() {
+        List<CategoryEntity> categories = categoryService.listWithTree();
+        return R.ok().put("data", categories);
     }
+
 }
