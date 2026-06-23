@@ -4,3 +4,5 @@ server:
 spring:
   application:
     name: ybmall-product # 服务名叫 ybmall-product
+  profiles:
+    active: local

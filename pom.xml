@@ -38,6 +38,7 @@
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mybatis-plus.version>3.5.15</mybatis-plus.version>
     </properties>
 
 </project>
