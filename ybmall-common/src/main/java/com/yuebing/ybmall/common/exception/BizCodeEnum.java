@@ -12,7 +12,9 @@ public enum BizCodeEnum {
     VALID_EXCEPTION(10001, "参数格式校验失败"),
     PRODUCT_CATEGORY_NOT_FOUND(11000, "分类不存在"),
     PRODUCT_CATEGORY_HAS_CHILDREN(11001, "当前分类存在子分类，不能删除"),
-    PRODUCT_BRAND_NOT_FOUND(11100, "品牌不存在");
+    PRODUCT_BRAND_NOT_FOUND(11100, "品牌不存在"),
+    PRODUCT_ATTR_GROUP_NOT_FOUND(11200, "属性分组不存在"),
+    PRODUCT_ATTR_GROUP_HAS_RELATION(11201, "当前属性分组存在关联属性，不能删除");
 
     /**
      * 业务错误码。
