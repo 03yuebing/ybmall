@@ -14,7 +14,10 @@ public enum BizCodeEnum {
     PRODUCT_CATEGORY_HAS_CHILDREN(11001, "当前分类存在子分类，不能删除"),
     PRODUCT_BRAND_NOT_FOUND(11100, "品牌不存在"),
     PRODUCT_ATTR_GROUP_NOT_FOUND(11200, "属性分组不存在"),
-    PRODUCT_ATTR_GROUP_HAS_RELATION(11201, "当前属性分组存在关联属性，不能删除");
+    PRODUCT_ATTR_GROUP_HAS_RELATION(11201, "当前属性分组存在关联属性，不能删除"),
+    PRODUCT_ATTR_GROUP_REQUIRED(11300, "规格参数必须关联属性分组"),
+    PRODUCT_ATTR_NOT_FOUND(11301, "属性不存在"),
+    PRODUCT_ATTR_TYPE_INVALID(11302, "属性类型不合法");
 
     /**
      * 业务错误码。
