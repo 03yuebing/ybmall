@@ -8,9 +8,11 @@ import com.yuebing.ybmall.common.exception.BizException;
 import com.yuebing.ybmall.product.entity.BrandEntity;
 import com.yuebing.ybmall.product.mapper.BrandMapper;
 import com.yuebing.ybmall.product.service.BrandService;
+import com.yuebing.ybmall.product.service.CategoryBrandRelationService;
 import com.yuebing.ybmall.product.vo.BrandSaveVo;
 import com.yuebing.ybmall.product.vo.BrandUpdateVo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -22,6 +24,12 @@ import java.util.List;
  */
 @Service
 public class BrandServiceImpl extends ServiceImpl<BrandMapper, BrandEntity> implements BrandService {
+
+    private final CategoryBrandRelationService categoryBrandRelationService;
+
+    public BrandServiceImpl(CategoryBrandRelationService categoryBrandRelationService) {
+        this.categoryBrandRelationService = categoryBrandRelationService;
+    }
 
     /**
      * 分页查询品牌列表。
@@ -93,6 +101,7 @@ public class BrandServiceImpl extends ServiceImpl<BrandMapper, BrandEntity> impl
      * @param brandUpdateVo 更新品牌请求参数
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateBrand(BrandUpdateVo brandUpdateVo) {
         BrandEntity brand = this.getById(brandUpdateVo.getBrandId());
 
@@ -110,6 +119,10 @@ public class BrandServiceImpl extends ServiceImpl<BrandMapper, BrandEntity> impl
         updateBrand.setSort(brandUpdateVo.getSort());
 
         this.updateById(updateBrand);
+
+        if (brandUpdateVo.getName() != null) {
+            categoryBrandRelationService.updateBrandName(brandUpdateVo.getBrandId(), brandUpdateVo.getName());
+        }
     }
 
     /**

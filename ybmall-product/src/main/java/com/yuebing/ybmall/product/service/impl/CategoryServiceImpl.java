@@ -5,10 +5,12 @@ import com.yuebing.ybmall.common.exception.BizCodeEnum;
 import com.yuebing.ybmall.common.exception.BizException;
 import com.yuebing.ybmall.product.entity.CategoryEntity;
 import com.yuebing.ybmall.product.mapper.CategoryMapper;
+import com.yuebing.ybmall.product.service.CategoryBrandRelationService;
 import com.yuebing.ybmall.product.service.CategoryService;
 import com.yuebing.ybmall.product.vo.CategorySaveVo;
 import com.yuebing.ybmall.product.vo.CategoryUpdateVo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -22,6 +24,12 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEntity> implements CategoryService {
+
+    private final CategoryBrandRelationService categoryBrandRelationService;
+
+    public CategoryServiceImpl(CategoryBrandRelationService categoryBrandRelationService) {
+        this.categoryBrandRelationService = categoryBrandRelationService;
+    }
 
     /**
      * 查询商品三级分类树。
@@ -101,6 +109,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
      * @param categoryUpdateVo 更新分类请求参数
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateCategory(CategoryUpdateVo categoryUpdateVo) {
         CategoryEntity category = this.getById(categoryUpdateVo.getCatId());
 
@@ -118,6 +127,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, CategoryEnt
         categoryEntity.setProductUnit(categoryUpdateVo.getProductUnit());
 
         this.updateById(categoryEntity);
+
+        if (categoryUpdateVo.getName() != null) {
+            categoryBrandRelationService.updateCategoryName(categoryUpdateVo.getCatId(), categoryUpdateVo.getName());
+        }
     }
 
     /**
