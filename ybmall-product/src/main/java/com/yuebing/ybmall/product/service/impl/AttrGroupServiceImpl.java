@@ -5,7 +5,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuebing.ybmall.common.exception.BizCodeEnum;
 import com.yuebing.ybmall.common.exception.BizException;
+import com.yuebing.ybmall.product.entity.AttrAttrgroupRelationEntity;
+import com.yuebing.ybmall.product.entity.AttrEntity;
 import com.yuebing.ybmall.product.entity.AttrGroupEntity;
+import com.yuebing.ybmall.product.mapper.AttrMapper;
 import com.yuebing.ybmall.product.mapper.AttrGroupMapper;
 import com.yuebing.ybmall.product.service.AttrAttrgroupRelationService;
 import com.yuebing.ybmall.product.service.AttrGroupService;
@@ -26,11 +29,15 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupMapper, AttrGroup
         implements AttrGroupService {
 
     private static final long ALL_CATELOG_ID = 0L;
+    private static final int ATTR_TYPE_BASE = 1;
 
     private final AttrAttrgroupRelationService attrAttrgroupRelationService;
+    private final AttrMapper attrMapper;
 
-    public AttrGroupServiceImpl(AttrAttrgroupRelationService attrAttrgroupRelationService) {
+    public AttrGroupServiceImpl(AttrAttrgroupRelationService attrAttrgroupRelationService,
+                                AttrMapper attrMapper) {
         this.attrAttrgroupRelationService = attrAttrgroupRelationService;
+        this.attrMapper = attrMapper;
     }
 
     /**
@@ -156,6 +163,85 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupMapper, AttrGroup
         }
 
         this.removeByIds(attrGroupIds);
+    }
+
+    /**
+     * 查询属性分组已经关联的属性列表。
+     *
+     * @param attrGroupId 属性分组 ID
+     * @return 已关联属性列表
+     */
+    @Override
+    public List<AttrEntity> getRelationAttrs(Long attrGroupId) {
+        getAttrGroupById(attrGroupId);
+
+        List<Long> attrIds = attrAttrgroupRelationService.lambdaQuery()
+                .eq(AttrAttrgroupRelationEntity::getAttrGroupId, attrGroupId)
+                .list()
+                .stream()
+                .map(AttrAttrgroupRelationEntity::getAttrId)
+                .filter(attrId -> attrId != null)
+                .toList();
+
+        if (attrIds.isEmpty()) {
+            return List.of();
+        }
+
+        LambdaQueryWrapper<AttrEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(AttrEntity::getAttrId, attrIds)
+                .orderByAsc(AttrEntity::getAttrId);
+
+        return attrMapper.selectList(wrapper);
+    }
+
+    /**
+     * 分页查询当前属性分组还可以关联的属性列表。
+     *
+     * @param attrGroupId 属性分组 ID
+     * @param page 当前页码
+     * @param limit 每页记录数
+     * @param key 搜索关键字
+     * @return 可关联属性分页结果
+     */
+    @Override
+    public Page<AttrEntity> getNoRelationAttrs(Long attrGroupId, Long page, Long limit, String key) {
+        AttrGroupEntity attrGroup = getAttrGroupById(attrGroupId);
+        Page<AttrEntity> pageParam = new Page<>(page, limit);
+        LambdaQueryWrapper<AttrEntity> wrapper = new LambdaQueryWrapper<>();
+
+        wrapper.eq(AttrEntity::getAttrType, ATTR_TYPE_BASE);
+
+        if (attrGroup.getCatelogId() != null) {
+            wrapper.eq(AttrEntity::getCatelogId, attrGroup.getCatelogId());
+        }
+
+        List<Long> relationAttrIds = attrAttrgroupRelationService.list().stream()
+                .map(AttrAttrgroupRelationEntity::getAttrId)
+                .filter(attrId -> attrId != null)
+                .distinct()
+                .toList();
+
+        if (!relationAttrIds.isEmpty()) {
+            wrapper.notIn(AttrEntity::getAttrId, relationAttrIds);
+        }
+
+        if (StringUtils.hasText(key)) {
+            Long attrId = tryParseLong(key);
+
+            if (attrId != null) {
+                wrapper.and(query -> query
+                        .eq(AttrEntity::getAttrId, attrId)
+                        .or()
+                        .like(AttrEntity::getAttrName, key)
+                );
+            } else {
+                wrapper.like(AttrEntity::getAttrName, key);
+            }
+        }
+
+        wrapper.orderByAsc(AttrEntity::getAttrId);
+
+        return attrMapper.selectPage(pageParam, wrapper);
     }
 
     /**

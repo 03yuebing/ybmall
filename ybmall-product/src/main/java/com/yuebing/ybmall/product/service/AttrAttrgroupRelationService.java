@@ -2,6 +2,7 @@ package com.yuebing.ybmall.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuebing.ybmall.product.entity.AttrAttrgroupRelationEntity;
+import com.yuebing.ybmall.product.vo.AttrAttrgroupRelationVo;
 
 import java.util.List;
 
@@ -49,4 +50,18 @@ public interface AttrAttrgroupRelationService extends IService<AttrAttrgroupRela
      * @param attrIds 属性 ID 列表
      */
     void removeByAttrIds(List<Long> attrIds);
+
+    /**
+     * 批量新增属性和属性分组的关联关系。
+     *
+     * @param relationVos 关联关系请求列表
+     */
+    void saveRelations(List<AttrAttrgroupRelationVo> relationVos);
+
+    /**
+     * 批量删除属性和属性分组的关联关系。
+     *
+     * @param relationVos 关联关系请求列表
+     */
+    void removeRelations(List<AttrAttrgroupRelationVo> relationVos);
 }

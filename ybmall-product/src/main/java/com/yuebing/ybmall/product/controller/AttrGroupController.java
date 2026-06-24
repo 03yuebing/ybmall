@@ -2,8 +2,11 @@ package com.yuebing.ybmall.product.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuebing.ybmall.common.utils.R;
+import com.yuebing.ybmall.product.entity.AttrEntity;
 import com.yuebing.ybmall.product.entity.AttrGroupEntity;
+import com.yuebing.ybmall.product.service.AttrAttrgroupRelationService;
 import com.yuebing.ybmall.product.service.AttrGroupService;
+import com.yuebing.ybmall.product.vo.AttrAttrgroupRelationVo;
 import com.yuebing.ybmall.product.vo.AttrGroupSaveVo;
 import com.yuebing.ybmall.product.vo.AttrGroupUpdateVo;
 import jakarta.validation.Valid;
@@ -25,9 +28,12 @@ import java.util.List;
 public class AttrGroupController {
 
     private final AttrGroupService attrGroupService;
+    private final AttrAttrgroupRelationService attrAttrgroupRelationService;
 
-    public AttrGroupController(AttrGroupService attrGroupService) {
+    public AttrGroupController(AttrGroupService attrGroupService,
+                               AttrAttrgroupRelationService attrAttrgroupRelationService) {
         this.attrGroupService = attrGroupService;
+        this.attrAttrgroupRelationService = attrAttrgroupRelationService;
     }
 
     /**
@@ -93,6 +99,60 @@ public class AttrGroupController {
     @PostMapping("/product/attrgroup/delete")
     public R delete(@RequestBody List<Long> attrGroupIds) {
         attrGroupService.removeAttrGroupByIds(attrGroupIds);
+        return R.ok();
+    }
+
+    /**
+     * 查询属性分组已经关联的属性列表。
+     *
+     * @param attrGroupId 属性分组 ID
+     * @return 已关联属性列表
+     */
+    @GetMapping("/product/attrgroup/{attrGroupId}/attr/relation")
+    public R relation(@PathVariable Long attrGroupId) {
+        List<AttrEntity> attrs = attrGroupService.getRelationAttrs(attrGroupId);
+        return R.ok().put("data", attrs);
+    }
+
+    /**
+     * 分页查询属性分组还可以关联的属性列表。
+     *
+     * @param attrGroupId 属性分组 ID
+     * @param page 当前页码，从 1 开始
+     * @param limit 每页记录数
+     * @param key 搜索关键字，可匹配属性 ID 或属性名称
+     * @return 可关联属性分页结果
+     */
+    @GetMapping("/product/attrgroup/{attrGroupId}/noattr/relation")
+    public R noRelation(@PathVariable Long attrGroupId,
+                        @RequestParam(defaultValue = "1") Long page,
+                        @RequestParam(defaultValue = "10") Long limit,
+                        @RequestParam(required = false) String key) {
+        Page<AttrEntity> result = attrGroupService.getNoRelationAttrs(attrGroupId, page, limit, key);
+        return R.ok().put("data", result);
+    }
+
+    /**
+     * 批量新增属性和属性分组的关联关系。
+     *
+     * @param relationVos 关联关系请求列表
+     * @return 操作结果
+     */
+    @PostMapping("/product/attrgroup/attr/relation")
+    public R saveRelation(@Valid @RequestBody List<AttrAttrgroupRelationVo> relationVos) {
+        attrAttrgroupRelationService.saveRelations(relationVos);
+        return R.ok();
+    }
+
+    /**
+     * 批量删除属性和属性分组的关联关系。
+     *
+     * @param relationVos 关联关系请求列表
+     * @return 操作结果
+     */
+    @PostMapping("/product/attrgroup/attr/relation/delete")
+    public R deleteRelation(@Valid @RequestBody List<AttrAttrgroupRelationVo> relationVos) {
+        attrAttrgroupRelationService.removeRelations(relationVos);
         return R.ok();
     }
 }

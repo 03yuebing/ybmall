@@ -17,7 +17,8 @@ public enum BizCodeEnum {
     PRODUCT_ATTR_GROUP_HAS_RELATION(11201, "当前属性分组存在关联属性，不能删除"),
     PRODUCT_ATTR_GROUP_REQUIRED(11300, "规格参数必须关联属性分组"),
     PRODUCT_ATTR_NOT_FOUND(11301, "属性不存在"),
-    PRODUCT_ATTR_TYPE_INVALID(11302, "属性类型不合法");
+    PRODUCT_ATTR_TYPE_INVALID(11302, "属性类型不合法"),
+    PRODUCT_ATTR_HAS_RELATION(11303, "属性已经关联属性分组，不能重复关联");
 
     /**
      * 业务错误码。

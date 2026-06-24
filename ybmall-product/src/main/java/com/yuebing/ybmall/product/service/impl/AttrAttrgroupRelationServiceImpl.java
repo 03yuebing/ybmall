@@ -1,12 +1,19 @@
 package com.yuebing.ybmall.product.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yuebing.ybmall.common.exception.BizCodeEnum;
+import com.yuebing.ybmall.common.exception.BizException;
 import com.yuebing.ybmall.product.entity.AttrAttrgroupRelationEntity;
 import com.yuebing.ybmall.product.mapper.AttrAttrgroupRelationMapper;
 import com.yuebing.ybmall.product.service.AttrAttrgroupRelationService;
+import com.yuebing.ybmall.product.vo.AttrAttrgroupRelationVo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 属性与属性分组关联业务实现。
@@ -94,5 +101,57 @@ public class AttrAttrgroupRelationServiceImpl
         this.lambdaUpdate()
                 .in(AttrAttrgroupRelationEntity::getAttrId, attrIds)
                 .remove();
+    }
+
+    /**
+     * 批量新增属性和属性分组的关联关系。
+     *
+     * <p>同一个属性只能关联一个属性分组。如果属性已经在关系表中存在，
+     * 或同一次请求中重复提交同一个属性，则禁止新增。</p>
+     *
+     * @param relationVos 关联关系请求列表
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveRelations(List<AttrAttrgroupRelationVo> relationVos) {
+        if (relationVos == null || relationVos.isEmpty()) {
+            return;
+        }
+
+        Set<Long> requestAttrIds = new HashSet<>();
+        List<AttrAttrgroupRelationEntity> relations = new ArrayList<>();
+
+        for (AttrAttrgroupRelationVo relationVo : relationVos) {
+            if (!requestAttrIds.add(relationVo.getAttrId()) || getByAttrId(relationVo.getAttrId()) != null) {
+                throw new BizException(BizCodeEnum.PRODUCT_ATTR_HAS_RELATION);
+            }
+
+            AttrAttrgroupRelationEntity relation = new AttrAttrgroupRelationEntity();
+            relation.setAttrId(relationVo.getAttrId());
+            relation.setAttrGroupId(relationVo.getAttrGroupId());
+            relations.add(relation);
+        }
+
+        this.saveBatch(relations);
+    }
+
+    /**
+     * 批量删除属性和属性分组的关联关系。
+     *
+     * @param relationVos 关联关系请求列表
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void removeRelations(List<AttrAttrgroupRelationVo> relationVos) {
+        if (relationVos == null || relationVos.isEmpty()) {
+            return;
+        }
+
+        for (AttrAttrgroupRelationVo relationVo : relationVos) {
+            this.lambdaUpdate()
+                    .eq(AttrAttrgroupRelationEntity::getAttrId, relationVo.getAttrId())
+                    .eq(AttrAttrgroupRelationEntity::getAttrGroupId, relationVo.getAttrGroupId())
+                    .remove();
+        }
     }
 }

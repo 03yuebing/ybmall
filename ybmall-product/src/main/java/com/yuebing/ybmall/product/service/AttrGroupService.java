@@ -2,6 +2,7 @@ package com.yuebing.ybmall.product.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yuebing.ybmall.product.entity.AttrEntity;
 import com.yuebing.ybmall.product.entity.AttrGroupEntity;
 import com.yuebing.ybmall.product.vo.AttrGroupSaveVo;
 import com.yuebing.ybmall.product.vo.AttrGroupUpdateVo;
@@ -56,4 +57,25 @@ public interface AttrGroupService extends IService<AttrGroupEntity> {
      * @param attrGroupIds 待删除的属性分组 ID 列表
      */
     void removeAttrGroupByIds(List<Long> attrGroupIds);
+
+    /**
+     * 查询属性分组已经关联的属性列表。
+     *
+     * @param attrGroupId 属性分组 ID
+     * @return 已关联属性列表
+     */
+    List<AttrEntity> getRelationAttrs(Long attrGroupId);
+
+    /**
+     * 分页查询当前属性分组还可以关联的属性列表。
+     *
+     * <p>可关联属性 = 当前分类下所有基本属性 - 已经被任意属性分组关联过的属性。</p>
+     *
+     * @param attrGroupId 属性分组 ID
+     * @param page 当前页码
+     * @param limit 每页记录数
+     * @param key 搜索关键字，可匹配属性 ID 或属性名称
+     * @return 可关联属性分页结果
+     */
+    Page<AttrEntity> getNoRelationAttrs(Long attrGroupId, Long page, Long limit, String key);
 }
